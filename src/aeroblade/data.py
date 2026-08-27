@@ -6,7 +6,33 @@ import torchvision.transforms.v2 as tf
 from PIL import Image
 from torchvision.datasets import VisionDataset
 
+
+def crop_to_multiple_of_8(img: Image.Image) -> Image.Image:
+    """Center-crop an image so both dimensions are divisible by eight."""
+    width, height = img.size
+    new_width = width - (width % 8)
+    new_height = height - (height % 8)
+
+    if new_width == 0 or new_height == 0:
+        raise ValueError(
+            f"Image dimensions must be at least 8x8 pixels; got {width}x{height}."
+        )
+    if (new_width, new_height) == (width, height):
+        return img
+
+    left = (width - new_width) // 2
+    top = (height - new_height) // 2
+    return img.crop((left, top, left + new_width, top + new_height))
+
+
 IMG_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
+DEFAULT_TRANSFORM = tf.Compose(
+    [
+        crop_to_multiple_of_8,
+        tf.ToImage(),
+        tf.ToDtype(torch.float32, scale=True),
+    ]
+)
 
 
 class ImageFolder(VisionDataset):
@@ -17,9 +43,7 @@ class ImageFolder(VisionDataset):
     def __init__(
         self,
         paths: Union[list[Path], Path],
-        transform: Optional[Callable] = tf.Compose(
-            [tf.ToImage(), tf.ToDtype(torch.float32, scale=True)]
-        ),
+        transform: Optional[Callable] = DEFAULT_TRANSFORM,
         amount: Optional[int] = None,
     ) -> None:
         self.paths = [paths] if isinstance(paths, Path) else paths

@@ -16,8 +16,14 @@ def safe_mkdir(directory: Path) -> None:
 
 
 def device() -> str:
-    """Return 'cuda' if available, 'cpu' otherwise"""
-    return "cuda" if torch.cuda.is_available() else "cpu"
+    """Return the best available device."""
+    if torch.cuda.is_available():
+        return "cuda"
+
+    mps_backend = getattr(torch.backends, "mps", None)
+    if mps_backend is not None and mps_backend.is_available():
+        return "mps"
+    return "cpu"
 
 
 def write_config(config: dict, directory: Path) -> None:

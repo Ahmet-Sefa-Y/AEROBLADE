@@ -13,10 +13,10 @@ def get_nice_name(input: str) -> str:
         if "real" in input:
             return "Real"
         elif "stable-diffusion" in input:
-            version = re.search("(\d)-(\d)", input)
+            version = re.search(r"(\d)-(\d)", input)
             return f"SD{version.group(1)}.{version.group(2)}"
         elif "kandinsky" in input:
-            version = re.search("(\d)-(\d)", input)
+            version = re.search(r"(\d)-(\d)", input)
             return f"KD{version.group(1)}.{version.group(2)}"
         elif "midjourney" in input:
             version = re.search("-v(.*)", input)

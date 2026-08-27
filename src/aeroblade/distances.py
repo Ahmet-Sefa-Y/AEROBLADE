@@ -138,7 +138,9 @@ def _compute_lpips(
         warnings.simplefilter("ignore")
         model = _PatchedLPIPS(spatial=True, **model_kwargs).to(device())
 
-    torch.compile(model.net)
+    compute_device = device()
+    if compute_device == "cuda":
+        model.net = torch.compile(model.net)
 
     lpips_layers = [[] for _ in range(1 + len(model.chns))]
     for (tensor_a, _), (tensor_b, _) in tqdm(
@@ -147,8 +149,8 @@ def _compute_lpips(
         total=len(dl_a),
     ):
         sum_batch, layers_batch = model(
-            tensor_a.to(device()),
-            tensor_b.to(device()),
+            tensor_a.to(compute_device),
+            tensor_b.to(compute_device),
             retPerLayer=True,
             normalize=True,
         )

@@ -66,13 +66,20 @@ def compute_reconstructions(
             )
 
         # set up pipeline
+        compute_device = device()
+        model_dtype = torch.float32 if compute_device == "cpu" else torch.float16
         pipe = AutoPipelineForImage2Image.from_pretrained(
             repo_id,
-            torch_dtype=torch.float16,
+            torch_dtype=model_dtype,
             use_safetensors=True,
-            variant="fp16" if "kandinsky-2" not in repo_id else None,
+            variant=(
+                "fp16"
+                if model_dtype == torch.float16 and "kandinsky-2" not in repo_id
+                else None
+            ),
         )
-        pipe.enable_model_cpu_offload()
+        if compute_device == "cuda":
+            pipe.enable_model_cpu_offload()
 
         # extract AE
         if hasattr(pipe, "vae"):
@@ -81,8 +88,9 @@ def compute_reconstructions(
                 pipe.upcast_vae()
         elif hasattr(pipe, "movq"):
             ae = pipe.movq
-        ae.to(device())
-        ae = torch.compile(ae)
+        ae.to(compute_device)
+        if compute_device == "cuda":
+            ae = torch.compile(ae)
         decode_dtype = next(iter(ae.post_quant_conv.parameters())).dtype
 
         # reconstruct
@@ -93,7 +101,7 @@ def compute_reconstructions(
             desc=f"Reconstructing with {repo_id}.",
         ):
             # normalize
-            images = images.to(device(), dtype=ae.dtype) * 2.0 - 1.0
+            images = images.to(compute_device, dtype=ae.dtype) * 2.0 - 1.0
 
             # encode
             latents = retrieve_latents(ae.encode(images), generator=generator)

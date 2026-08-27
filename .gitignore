@@ -1,14 +1,34 @@
-.venv
-__pycache__
-2023_aeroblade.egg-info
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Local notebooks and data
 playground.ipynb
-data
+data/
+tmp/
+
+# Generated models, caches, logs, and results
 output*
-cache
-weights
-.vscode
-debug
-lightning_logs
-tmp
-aeroblade_output
-aeroblade_data
+cache/
+weights/
+debug/
+lightning_logs/
+aeroblade_output/
+aeroblade_data/
+smoke_outputs*/
+full_outputs/

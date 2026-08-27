@@ -8,7 +8,7 @@ import torchvision.transforms.v2 as tf
 from tqdm import tqdm
 
 from aeroblade.complexities import complexity_from_config
-from aeroblade.data import ImageFolder
+from aeroblade.data import ImageFolder, crop_to_multiple_of_8
 from aeroblade.distances import distance_from_config
 from aeroblade.image import compute_reconstructions
 from aeroblade.transforms import transform_from_config
@@ -44,6 +44,7 @@ def compute_distances(
                     transform_from_config(transform_config)
                     if isinstance(transform_config, str)
                     else transform_config,
+                    crop_to_multiple_of_8,
                     tf.ToImage(),
                     tf.ToDtype(torch.float32, scale=True),
                 ]
@@ -148,6 +149,7 @@ def compute_complexities(
             transform = tf.Compose(
                 [
                     transform_from_config(transform_config),
+                    crop_to_multiple_of_8,
                     tf.ToImage(),
                     tf.ToDtype(torch.float32, scale=True),
                 ]
